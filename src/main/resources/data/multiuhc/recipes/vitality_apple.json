@@ -1,0 +1,29 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern":
+  [
+    "dgd",
+    "gag",
+    "dgd"
+  ],
+  "key":
+  {
+    "d":
+    {
+      "item": "minecraft:diamond"
+    },
+    "a":
+    {
+      "item": "minecraft:apple"
+    },
+    "g":
+    {
+      "item": "minecraft:gold_block"
+    }
+  },
+  "result":
+  {
+    "item": "multiuhc:vitality_apple",
+    "count": 1
+  }
+}
