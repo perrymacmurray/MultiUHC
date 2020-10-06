@@ -4,7 +4,9 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.block.material.Material;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.item.BlockItemUseContext;
 import net.minecraft.item.ItemStack;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntityType;
@@ -13,16 +15,14 @@ import net.minecraft.util.Hand;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.BlockRayTraceResult;
 import net.minecraft.util.text.StringTextComponent;
-import net.minecraft.world.GameType;
-import net.minecraft.world.IBlockReader;
-import net.minecraft.world.World;
+import net.minecraft.world.*;
 
 public class Gravestone extends Block {
     public static Block INSTANCE = new Gravestone();
     public static TileEntityType<?> tileGravestone = TileEntityType.Builder.create(GravestoneTileEntity::new, INSTANCE).build(null);
 
     private Gravestone() {
-        super(Block.Properties.create(Material.ROCK).doesNotBlockMovement().hardnessAndResistance(-1.0F, 3600000.0F));
+        super(Block.Properties.create(Material.ROCK).doesNotBlockMovement().hardnessAndResistance(-1.0F, 3600000.0F).noDrops());
         setRegistryName("gravestone");
     }
 
@@ -38,10 +38,8 @@ public class Gravestone extends Block {
                 target.attemptTeleport(pos.getX(), pos.getY(), pos.getZ(), true);
                 target.setGameType(GameType.SURVIVAL);
 
-                if (worldIn.isRemote()) {
-                    for (PlayerEntity p : worldIn.getPlayers())
-                        player.sendStatusMessage(new StringTextComponent(target.getName().getString() + " has been revived" ), false);
-                }
+                for (PlayerEntity p : worldIn.getPlayers())
+                    player.sendStatusMessage(new StringTextComponent(target.getName().getString() + " has been revived" ), false);
             } else {
                 player.sendStatusMessage(new StringTextComponent("This player is offline, or does not exist" ), true);
                 return ActionResultType.SUCCESS;
@@ -49,9 +47,6 @@ public class Gravestone extends Block {
 
             worldIn.setBlockState(pos, Blocks.AIR.getDefaultState());
         } else {
-            if (!worldIn.isRemote)
-                return ActionResultType.SUCCESS;
-
             player.sendStatusMessage(new StringTextComponent("This gravestone belongs to " + (worldIn.getPlayerByUuid(entity.getOwner()) == null ? "no one" : worldIn.getPlayerByUuid(entity.getOwner()).getName().getString())), true);
         }
 
@@ -66,5 +61,31 @@ public class Gravestone extends Block {
     @Override
     public TileEntity createTileEntity(BlockState state, IBlockReader world) {
         return tileGravestone.create();
+    }
+
+    @Override
+    public boolean canEntityDestroy(BlockState state, IBlockReader world, BlockPos pos, Entity entity) {
+        return false;
+    }
+
+    @Override
+    public void onExplosionDestroy(World worldIn, BlockPos pos, Explosion explosionIn) {}
+
+    @Override
+    public void onBlockExploded(BlockState state, World world, BlockPos pos, Explosion explosion) {}
+
+    @Override
+    public boolean isReplaceable(BlockState state, BlockItemUseContext useContext) {
+        return false;
+    }
+
+    @Override
+    public boolean canBeReplacedByLeaves(BlockState state, IWorldReader world, BlockPos pos) {
+        return false;
+    }
+
+    @Override
+    public boolean canBeReplacedByLogs(BlockState state, IWorldReader world, BlockPos pos) {
+        return false;
     }
 }

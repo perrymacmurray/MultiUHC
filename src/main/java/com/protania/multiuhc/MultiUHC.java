@@ -1,6 +1,7 @@
 package com.protania.multiuhc;
 
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.tileentity.TileEntityType;
@@ -11,6 +12,7 @@ import net.minecraft.world.GameType;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.RegistryEvent;
 import net.minecraftforge.event.entity.living.LivingDeathEvent;
+import net.minecraftforge.event.world.BlockEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
@@ -56,17 +58,27 @@ public class MultiUHC
 
     @SubscribeEvent
     public void onLivingDeath(LivingDeathEvent event) {
+        if (event.isCanceled())
+            return;
+
         if (event.getEntity() instanceof PlayerEntity) {
             PlayerEntity entity = (PlayerEntity)event.getEntity();
 
             entity.setGameType(GameType.SPECTATOR);
             entity.inventory.clear();
             Vector3d posVec = entity.getPositionVec();
+            LOGGER.debug("Creating gravestone at " + posVec.x + ' ' + posVec.y + ' ' + posVec.z);
             BlockPos pos = new BlockPos((int)(posVec.x), (int)(posVec.y), (int)(posVec.z));
-            entity.world.setBlockState(pos, Gravestone.INSTANCE.getDefaultState());
+            BlockState old = entity.world.getBlockState(pos);
+            if (!entity.world.setBlockState(pos, Gravestone.INSTANCE.getDefaultState()))
+                LOGGER.error("Could not create gravestone");
 
             GravestoneTileEntity tile = (GravestoneTileEntity)(entity.world.getTileEntity(pos));
             tile.assignOwner(entity);
+            BlockState cur = entity.world.getBlockState(pos);
+            LOGGER.debug("Calling block update - block is now " + cur.getBlock().getTranslationKey());
+            entity.world.notifyBlockUpdate(pos, old, cur, 2);
+
             entity.sendStatusMessage(new StringTextComponent("You have died. A player may right click your gravestone with a Vitality Apple to revive you."), false);
         }
     }
