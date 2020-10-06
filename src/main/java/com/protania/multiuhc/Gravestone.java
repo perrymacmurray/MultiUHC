@@ -35,11 +35,13 @@ public class Gravestone extends Block {
                 player.getHeldItem(handIn).setCount(player.getHeldItem(handIn).getCount() - 1); //Remove one item
 
                 PlayerEntity target = worldIn.getPlayerByUuid(entity.getOwner());
-                target.attemptTeleport(pos.getX(), pos.getY(), pos.getZ(), true);
+                target.setPositionAndUpdate(pos.getX(), pos.getY(), pos.getZ());
                 target.setGameType(GameType.SURVIVAL);
 
-                for (PlayerEntity p : worldIn.getPlayers())
-                    player.sendStatusMessage(new StringTextComponent(target.getName().getString() + " has been revived" ), false);
+                if (entity.getWorld().isRemote()) {
+                    for (PlayerEntity p : worldIn.getPlayers())
+                        player.sendStatusMessage(new StringTextComponent(target.getName().getString() + " has been revived"), false);
+                }
             } else {
                 player.sendStatusMessage(new StringTextComponent("This player is offline, or does not exist" ), true);
                 return ActionResultType.SUCCESS;
@@ -47,7 +49,8 @@ public class Gravestone extends Block {
 
             worldIn.setBlockState(pos, Blocks.AIR.getDefaultState());
         } else {
-            player.sendStatusMessage(new StringTextComponent("This gravestone belongs to " + (worldIn.getPlayerByUuid(entity.getOwner()) == null ? "no one" : worldIn.getPlayerByUuid(entity.getOwner()).getName().getString())), true);
+            if (entity.getWorld().isRemote())
+                player.sendStatusMessage(new StringTextComponent("This gravestone belongs to " + (worldIn.getPlayerByUuid(entity.getOwner()) == null ? "no one" : worldIn.getPlayerByUuid(entity.getOwner()).getName().getString())), true);
         }
 
         return ActionResultType.SUCCESS;

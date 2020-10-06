@@ -77,7 +77,7 @@ public class MultiUHC
             tile.assignOwner(entity);
             BlockState cur = entity.world.getBlockState(pos);
             LOGGER.debug("Calling block update - block is now " + cur.getBlock().getTranslationKey());
-            entity.world.notifyBlockUpdate(pos, old, cur, 2);
+            entity.world.notifyBlockUpdate(pos, old, cur, 3);
 
             entity.sendStatusMessage(new StringTextComponent("You have died. A player may right click your gravestone with a Vitality Apple to revive you."), false);
         }
