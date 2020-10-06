@@ -50,7 +50,7 @@ public class Gravestone extends Block {
             worldIn.setBlockState(pos, Blocks.AIR.getDefaultState());
         } else {
             if (entity.getWorld().isRemote())
-                player.sendStatusMessage(new StringTextComponent("This gravestone belongs to " + (worldIn.getPlayerByUuid(entity.getOwner()) == null ? "no one" : worldIn.getPlayerByUuid(entity.getOwner()).getName().getString())), true);
+                player.sendStatusMessage(new StringTextComponent("This gravestone belongs to " + (worldIn.getPlayerByUuid(entity.getOwner()) == null ? entity.getLastKnownName() : worldIn.getPlayerByUuid(entity.getOwner()).getName().getString())), true);
         }
 
         return ActionResultType.SUCCESS;

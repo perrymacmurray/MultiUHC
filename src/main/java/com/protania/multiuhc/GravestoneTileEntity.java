@@ -11,6 +11,7 @@ import java.util.UUID;
 
 public class GravestoneTileEntity extends TileEntity {
     private UUID owner = null;
+    private String lastKnownName;
 
     public GravestoneTileEntity() {
         super(Gravestone.tileGravestone);
@@ -18,12 +19,18 @@ public class GravestoneTileEntity extends TileEntity {
 
     public void assignOwner(PlayerEntity owner) {
         this.owner = owner.getUniqueID();
+        lastKnownName = owner.getName().getString();
         markDirty();
-        MultiUHC.LOGGER.debug("Set owner as " + owner.getUniqueID());
+
+        MultiUHC.LOGGER.debug("Set owner as " + this.owner + ", and LKN as " + lastKnownName);
     }
 
     public UUID getOwner() {
         return owner;
+    }
+
+    public String getLastKnownName() {
+        return lastKnownName;
     }
 
     @Override
@@ -31,6 +38,7 @@ public class GravestoneTileEntity extends TileEntity {
         CompoundNBT ret = super.write(compound);
 
         ret.putUniqueId("owner", owner);
+        ret.putString("lkn", lastKnownName);
 
         return ret;
     }
@@ -39,6 +47,7 @@ public class GravestoneTileEntity extends TileEntity {
     public void func_230337_a_(BlockState state, CompoundNBT compound) { //Read
         super.func_230337_a_(state, compound);
 
+        lastKnownName = compound.getString("lkn");
         owner = compound.getUniqueId("owner");
     }
 
@@ -55,11 +64,13 @@ public class GravestoneTileEntity extends TileEntity {
     @Override
     public SUpdateTileEntityPacket getUpdatePacket() {
         SUpdateTileEntityPacket packet = super.getUpdatePacket();
-        if (packet != null && packet.getNbtCompound() != null)
+        if (packet != null && packet.getNbtCompound() != null) {
             packet.getNbtCompound().putUniqueId("owner", owner);
-        else {
+            packet.getNbtCompound().putString("lkn", lastKnownName);
+        } else {
             CompoundNBT nbt = new CompoundNBT();
             nbt.putUniqueId("owner", owner);
+            nbt.putString("lkn", lastKnownName);
             packet = new SUpdateTileEntityPacket(getPos(), -1, nbt);
         }
         return packet;
@@ -69,5 +80,6 @@ public class GravestoneTileEntity extends TileEntity {
     public void onDataPacket(NetworkManager net, SUpdateTileEntityPacket pkt) {
         MultiUHC.LOGGER.debug("Got death data packet from server");
         owner = pkt.getNbtCompound().getUniqueId("owner");
+        lastKnownName = pkt.getNbtCompound().getString("lkn");
     }
 }
